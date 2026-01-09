@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../controllers/time_gate_controller.dart';
 import '../models/time_gate_status.dart';
+import '../utils/time_format.dart';
 import 'stage_two_view.dart';
 
 class StageOneView extends StatefulWidget {
@@ -70,7 +71,7 @@ class _StageOneViewState extends State<StageOneView> {
 
     if (!status.canEnterStageTwo) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please wait: ${_formatDuration(status.remaining)}')),
+        SnackBar(content: Text('Please wait: ${formatDuration(status.remaining)}')),
       );
       return;
     }
@@ -136,7 +137,7 @@ class _StageOneViewState extends State<StageOneView> {
             const Text('Stage One not completed yet.')
           else ...[
             Text(
-              'Remaining: ${_formatDuration(status!.remaining)}',
+              'Remaining: ${formatDuration(status!.remaining)}',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -149,11 +150,4 @@ class _StageOneViewState extends State<StageOneView> {
       ),
     );
   }
-}
-
-String _formatDuration(Duration duration) {
-  final minutes = duration.inMinutes;
-  final hours = minutes ~/ 60;
-  final leftoverMinutes = minutes % 60;
-  return '${hours}h ${leftoverMinutes}m';
 }
