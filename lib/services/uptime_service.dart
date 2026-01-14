@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 /// Monotonic uptime in milliseconds (not affected by device time changes).
+/// Uses platform-specific implementations via MethodChannel.
 class UptimeService {
   static const MethodChannel _ch = MethodChannel('app.uptime/channel');
 
