@@ -128,6 +128,8 @@ class _StageOneViewState extends State<StageOneView> {
     final status = gateStatus;
 
     final isStageOneComplete = status?.isStageOneComplete ?? false;
+    final isTamperingDetected = status?.isTamperingDetected ?? false;
+    final canEnterStageTwo = status?.canEnterStageTwo ?? false;
     final canCompleteStageOne = allStepsComplete && !isStageOneComplete;
 
     return Scaffold(
@@ -169,13 +171,34 @@ class _StageOneViewState extends State<StageOneView> {
           if (!isStageOneComplete)
             const Text('Stage One not completed yet.')
           else ...[
+            if (isTamperingDetected)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  status?.warning ??
+                      'Time manipulation detected. Please reset your device clock to the correct time to continue.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
             Text(
               'Remaining: ${formatDuration(status!.remaining)}',
               style: const TextStyle(fontSize: 16),
             ),
+            if (canEnterStageTwo)
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Text(
+                  'Stage Two is unlocked.',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
             const SizedBox(height: 12),
             FilledButton(
-              onPressed: _openStageTwoIfAllowed,
+              onPressed: canEnterStageTwo && !isTamperingDetected
+                  ? _openStageTwoIfAllowed
+                  : null,
               child: const Text('Go to Stage Two'),
             ),
           ],
