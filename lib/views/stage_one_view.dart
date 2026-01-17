@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../controllers/time_gate_controller.dart';
@@ -21,6 +23,8 @@ class _StageOneViewState extends State<StageOneView> {
 
   late List<bool> checkedSteps;
   TimeGateStatus? gateStatus;
+  Timer? _countdownTimer;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -29,10 +33,37 @@ class _StageOneViewState extends State<StageOneView> {
     _loadGateStatus();
   }
 
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _updateCountdownTicker(TimeGateStatus status) {
+    final shouldTick = status.isStageOneComplete && !status.canEnterStageTwo;
+    if (shouldTick) {
+      if (_countdownTimer?.isActive ?? false) return;
+      _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        _loadGateStatus();
+      });
+      return;
+    }
+
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+  }
+
   Future<void> _loadGateStatus() async {
-    final status = await TimeGateController.getGateStatus();
-    if (!mounted) return;
-    setState(() => gateStatus = status);
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final status = await TimeGateController.getGateStatus();
+      if (!mounted) return;
+      setState(() => gateStatus = status);
+      _updateCountdownTicker(status);
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   bool get allStepsComplete => checkedSteps.every((v) => v);
@@ -87,6 +118,8 @@ class _StageOneViewState extends State<StageOneView> {
       checkedSteps = List<bool>.filled(stageOneSteps.length, false);
       gateStatus = null;
     });
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
     await _loadGateStatus();
   }
 
